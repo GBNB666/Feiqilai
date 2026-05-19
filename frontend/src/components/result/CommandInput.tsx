@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Send } from "lucide-react"
@@ -12,17 +12,22 @@ export function CommandInput({ sectionCount, onSubmit }: Props) {
   const [value, setValue] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle")
 
+  useEffect(() => {
+    if (status !== "idle") {
+      const timer = setTimeout(() => setStatus("idle"), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [status])
+
   const handleSubmit = async () => {
     const match = value.match(/第(\d+)节\s*正文改为(.+)/)
     if (!match) {
       setStatus("err")
-      setTimeout(() => setStatus("idle"), 2000)
       return
     }
     const idx = parseInt(match[1]) - 1
     if (idx < 0 || idx >= sectionCount) {
       setStatus("err")
-      setTimeout(() => setStatus("idle"), 2000)
       return
     }
     setStatus("loading")
@@ -30,10 +35,8 @@ export function CommandInput({ sectionCount, onSubmit }: Props) {
       await onSubmit(idx, match[2])
       setStatus("ok")
       setValue("")
-      setTimeout(() => setStatus("idle"), 2000)
     } catch {
       setStatus("err")
-      setTimeout(() => setStatus("idle"), 2000)
     }
   }
 

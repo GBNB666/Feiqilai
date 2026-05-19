@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import type { FormatSettingItem, FormatSettingItemEnabled } from "@/types"
 
 export interface FormatInfo {
@@ -17,7 +18,19 @@ function alignLabel(a: string): string {
 }
 
 export function FormatTooltip({ info, anchorRect }: Props) {
-  if (!info || !anchorRect) return null
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    setVisible(true)
+  }, [info, anchorRect])
+
+  useEffect(() => {
+    const handleScroll = () => setVisible(false)
+    window.addEventListener("scroll", handleScroll, true)
+    return () => window.removeEventListener("scroll", handleScroll, true)
+  }, [])
+
+  if (!info || !anchorRect || !visible) return null
 
   const { settings, enabled, label } = info
 

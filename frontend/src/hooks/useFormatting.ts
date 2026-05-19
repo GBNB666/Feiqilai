@@ -5,6 +5,28 @@ import { DEFAULT_FORMAT_SETTINGS, DEFAULT_ENABLED_SETTINGS } from "@/types"
 
 type FormatState = "idle" | "selecting" | "analyzing" | "analyzed" | "annotating" | "formatting" | "done" | "error"
 
+function parseAnalysisResponse(response: any): { structure: PaperStructure | null; warnings: AnalysisWarnings | null } {
+  if (response.structure) {
+    return {
+      structure: response.structure,
+      warnings: response.warnings || null,
+    }
+  }
+  if (response.ai_analysis) {
+    try {
+      const parsed = JSON.parse(response.ai_analysis)
+      return {
+        structure: parsed,
+        warnings: parsed._warnings || null,
+      }
+    } catch (e) {
+      console.error("AI分析结果解析失败:", e)
+      throw new Error("AI分析结果解析失败，请重试")
+    }
+  }
+  return { structure: null, warnings: null }
+}
+
 export function useFormatting(jobId: string) {
   const [state, setState] = useState<FormatState>("selecting")
   const [job, setJob] = useState<FormatJob | null>(null)
@@ -36,16 +58,10 @@ export function useFormatting(jobId: string) {
         setState("analyzing")
         const analyzed = await api.startAnalysis(jobId)
         setJob(analyzed)
-        if (analyzed.ai_analysis) {
-          try {
-            const parsed = JSON.parse(analyzed.ai_analysis)
-            if (parsed.structure) {
-              setStructure(parsed.structure)
-              setWarnings(parsed.warnings || null)
-            } else {
-              setStructure(parsed)
-            }
-          } catch {}
+        const parsed = parseAnalysisResponse(analyzed)
+        if (parsed.structure) {
+          setStructure(parsed.structure)
+          setWarnings(parsed.warnings)
         }
         setState("formatting")
         await api.customizeSettings(jobId, formatSettings, enabledSettings)
@@ -58,16 +74,10 @@ export function useFormatting(jobId: string) {
         setState("analyzing")
         const analyzed = await api.startAnalysis(jobId)
         setJob(analyzed)
-        if (analyzed.ai_analysis) {
-          try {
-            const parsed = JSON.parse(analyzed.ai_analysis)
-            if (parsed.structure) {
-              setStructure(parsed.structure)
-              setWarnings(parsed.warnings || null)
-            } else {
-              setStructure(parsed)
-            }
-          } catch {}
+        const parsed = parseAnalysisResponse(analyzed)
+        if (parsed.structure) {
+          setStructure(parsed.structure)
+          setWarnings(parsed.warnings)
         }
         setState("analyzed")
         setStep("processing")

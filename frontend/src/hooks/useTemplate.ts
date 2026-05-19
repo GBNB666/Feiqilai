@@ -21,7 +21,10 @@ export function useTemplate() {
 
   const saveTemplate = useCallback(async (name: string, settings: any) => {
     const t = await api.saveTemplate(name, settings)
-    setTemplates((prev) => [t, ...prev])
+    setTemplates((prev) => {
+      const filtered = prev.filter((item) => item.name !== name)
+      return [t, ...filtered]
+    })
     return t
   }, [])
 

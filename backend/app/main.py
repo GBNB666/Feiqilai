@@ -22,6 +22,18 @@ def create_app() -> FastAPI:
     async def health_check():
         return {"status": "ok", "service": "paper-formatter", "version": "0.2.0"}
 
+    # 注册自定义异常处理器，将 AppError 转为 HTTP 响应
+    from app.shared.errors import AppError
+    from fastapi.responses import JSONResponse
+    from fastapi import Request
+
+    @app.exception_handler(AppError)
+    async def app_error_handler(request: Request, exc: AppError):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.message},
+        )
+
     return app
 
 

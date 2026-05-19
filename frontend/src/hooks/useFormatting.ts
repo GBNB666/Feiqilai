@@ -57,7 +57,7 @@ export function useFormatting(jobId: string) {
       if (mode === "auto") {
         setState("analyzing")
         const analyzed = await api.startAnalysis(jobId)
-        setJob(analyzed)
+        setJob((prev) => ({ ...prev!, id: analyzed.id || jobId, status: analyzed.status }))
         const parsed = parseAnalysisResponse(analyzed)
         if (parsed.structure) {
           setStructure(parsed.structure)
@@ -66,14 +66,14 @@ export function useFormatting(jobId: string) {
         setState("formatting")
         await api.customizeSettings(jobId, formatSettings, enabledSettings)
         const completed = await api.executeFormatting(jobId)
-        setJob(completed)
+        setJob((prev) => ({ ...prev!, id: completed.id || jobId, status: completed.status }))
         setState("done")
         setStep("done")
         fetchPreview(jobId)
       } else {
         setState("analyzing")
         const analyzed = await api.startAnalysis(jobId)
-        setJob(analyzed)
+        setJob((prev) => ({ ...prev!, id: analyzed.id || jobId, status: analyzed.status }))
         const parsed = parseAnalysisResponse(analyzed)
         if (parsed.structure) {
           setStructure(parsed.structure)

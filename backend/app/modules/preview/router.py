@@ -23,7 +23,7 @@ async def get_preview(job_id: str, db: Session = Depends(get_db)):
     sections = PreviewService.extract(file_path, structure)
 
     return {
-        "job_id": job_id,
+        "id": job_id,
         "title": structure.get("title", ""),
         "section_count": len(sections),
         "sections": sections,

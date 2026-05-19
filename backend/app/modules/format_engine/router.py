@@ -34,7 +34,7 @@ async def submit_annotations(req: AnnotationRequest, db: Session = Depends(get_d
     """保存手动标注"""
     job = JobService.get_or_404(req.job_id, db)
     JobService.save_annotations(req.job_id, req.annotations, db)
-    return {"job_id": req.job_id, "status": "annotated"}
+    return {"id": req.job_id, "status": "annotated"}
 
 
 @router.post("/api/format/customize")
@@ -44,7 +44,7 @@ async def customize_settings(req: CustomizeRequest, db: Session = Depends(get_db
     data = {"settings": req.settings, "enabled": req.enabled}
     job.user_annotations = json.dumps(data, ensure_ascii=False)
     db.commit()
-    return {"job_id": req.job_id, "status": "customized"}
+    return {"id": req.job_id, "status": "customized"}
 
 
 @router.post("/api/format/execute")
@@ -98,7 +98,7 @@ async def execute_formatting(
         JobService.set_status(job_id, JobStatus.COMPLETED, db)
 
         return {
-            "job_id": job_id,
+            "id": job_id,
             "status": "completed",
             "download_url": f"/api/download/{job_id}",
         }
@@ -133,4 +133,4 @@ async def modify_section(
         structure=structure,
     )
 
-    return {"job_id": job_id, "status": "updated"}
+    return {"id": job_id, "status": "updated"}

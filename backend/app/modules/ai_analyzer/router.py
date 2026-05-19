@@ -27,7 +27,7 @@ async def start_analysis(
         JobService.set_status(job_id, JobStatus.ANALYZED, db)
 
         return {
-            "job_id": job_id,
+            "id": job_id,
             "status": "analyzed",
             "structure": structure,
             "warnings": warnings,

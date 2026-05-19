@@ -98,7 +98,7 @@ export function ResultPreview({ job, preview, formatSettings, enabledSettings, o
           <h2 className="text-lg font-semibold">排版结果预览</h2>
           <Badge variant="secondary" className="ml-1">共 {total} 节</Badge>
         </div>
-        <a href={getDownloadUrl(job.id)} download={`formatted_${job.original_filename}`} className="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
+        <a href={getDownloadUrl(job.id)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
           <Download className="w-4 h-4" />下载
         </a>
       </div>

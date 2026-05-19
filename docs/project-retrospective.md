@@ -1,237 +1,193 @@
-# Paper-Formatter 项目复盘总结
+# Paper-Formatter 项目复盘总结（V1 + V2）
 
 ## 一、项目是什么
 
-一个**论文AI格式排版网站**，用户上传docx/pdf论文 → AI分析结构 → 自动按学术规范排版 → 下载修正后的文件。
+一个**论文AI格式排版网站**：上传docx → AI分析结构 → 按护理学论文规范排版 → 下载。
 
-- **目标用户**：大学生（主要是护理学等非CS专业，对论文格式要求不熟悉）
-- **商业定位**：个人全栈作品，简历项目，顺便赚点生活费
-- **开发周期**：2026年5月11日MVP完成，5月12日暂停，5月19日尝试修Bug后决定重来
-
----
-
-## 二、技术栈 & 项目结构
-
-### 后端 `C:\Users\博博\paper-formatter\backend\`
-
-```
-技术：Python + FastAPI + SQLAlchemy + SQLite + python-docx + DeepSeek-V4 API
-```
-
-| 文件 | 作用 |
-|------|------|
-| `app/main.py` | FastAPI入口，CORS只允许localhost:5173，注册路由 |
-| `app/config.py` | 环境配置（DeepSeek API key、数据库路径等），从.env读取 |
-| `app/database.py` | SQLAlchemy引擎和Session |
-| `app/models/job.py` | FormatJob数据模型（上传→分析→排版→完成的状态机） |
-| `app/routers/upload.py` | POST /api/upload — 文件上传 |
-| `app/routers/format.py` | /api/format/* — 分析、标注、自定义设置、执行排版、状态查询 |
-| `app/routers/download.py` | GET /api/download/{job_id} — 下载排版结果 |
-| `app/routers/preview.py` | /api/preview/* — 前端预览 |
-| `app/services/ai_analyzer.py` | 调用DeepSeek-V4分析论文结构（SYSTEM_PROMPT定义输出格式） |
-| `app/services/formatter.py` | 排版编排器，调用AI分析 + docx_processor |
-| `app/services/docx_processor.py` | **核心排版引擎**：匹配段落、应用标题/正文/题注格式 |
-| `app/services/format_standards.py` | 格式标准定义（一级标题16pt黑体居中、正文12pt宋体两端对齐等） |
-| `app/services/pdf_processor.py` | PDF处理（stub，未完整实现） |
-| `uploads/` | 用户上传的原始文件 |
-| `outputs/` | 排版后的输出文件 |
-
-### 前端 `C:\Users\博博\paper-formatter\frontend\`
-
-```
-技术：React 19 + TypeScript + Vite 8 + Tailwind CSS 4 + shadcn/ui + React Router 7
-```
-
-| 文件 | 作用 |
-|------|------|
-| `vite.config.ts` | **关键**：代理/api到后端端口，配置@别名 |
-| `src/main.tsx` | 入口 |
-| `src/App.tsx` | 路由定义（/ → HomePage, /process/:id → ProcessPage） |
-| `src/pages/HomePage.tsx` | 首页，文件上传 + 历史记录 |
-| `src/pages/ProcessPage.tsx` | 6步流程页（模式选择→分析→格式设置→排版→结果→下载） |
-| `src/components/upload/FileUploader.tsx` | 拖拽上传组件，accept=.pdf/.docx |
-| `src/hooks/useFileUpload.ts` | 上传状态管理hook |
-| `src/services/api.ts` | 所有API调用（upload、analyze、execute、download等） |
-| `src/types/index.ts` | TypeScript类型定义 |
-
-### 启动方式
-
-```bash
-# 后端（终端1）
-cd C:\Users\博博\paper-formatter\backend
-/c/Users/博博/python.exe -m uvicorn app.main:app --port 8000 --reload
-
-# 前端（终端2）
-cd C:\Users\博博\paper-formatter\frontend
-npx vite --port 5173
-```
-
-访问：http://localhost:5173
-
-### 启动前检查清单
-
-- [ ] 后端端口8000没有被占用
-- [ ] 前端vite.config.ts中代理target端口和实际后端端口一致（都是8000）
-- [ ] `.env`文件在backend目录下，DeepSeek API key有效
-- [ ] `npm install`已执行过（node_modules存在）
-- [ ] Python依赖已安装（requirements.txt中的包）
+- **目标用户**：博博自己 + 其他大学生（护理学等非CS专业）
+- **商业定位**：个人全栈作品 + 简历项目 + 赚生活费
+- **时间线**：
+  - 2026-05-11：V1 MVP完成
+  - 2026-05-12：修Bug发现太多问题，暂停
+  - 2026-05-19：V2 模块化重写（9板块架构），全功能跑通但下载Bug连环炸
+  - 2026-05-19 晚：用户决定删除全部代码，重新来
 
 ---
 
-## 三、已知Bug & 修复状态
+## 二、V2 做了什么不同的事
 
-### 严重Bug（3个）
+V2 吸取了 V1 的教训，做了以下改进：
 
-| # | Bug | 状态 | 根因 |
-|---|-----|------|------|
-| 1 | **正文粗体传播** — 正文变粗体大号字，标题反而不粗 | **已修复** | AI返回的start_marker是正文文字不是标题文字，匹配逻辑把正文段当成了标题 |
-| 2 | **字体变蓝** — 部分文字颜色异常 | **未复现** | 需要更多测试样本 |
-| 3 | **表格图片占位丢失** | **未验证** | 测试文件无表格图片 |
-
-### 中等Bug（3个）
-
-| # | Bug | 状态 |
-|---|-----|------|
-| 4 | 摘要格式丢失 | 未修 |
-| 5 | 参考文献标题化 | 未修 |
-| 6 | 目录静态页码 | 未修 |
-
-### 交互缺漏（3个）
-
-| # | 问题 | 状态 |
-|---|------|------|
-| 7 | 前进后退导航 | 未做 |
-| 8 | 口令修改框 | 未做 |
-| 9 | 悬停浮窗 | 未做 |
-
-### 已修复的Bug详情
-
-**Bug 1 修复过程（粗体传播）**：
-- 根因：AI的SYSTEM_PROMPT要求start_marker存"该节开头的标志性文本"，AI理解为正文前20字。docx_processor用这个marker去匹配段落，正文段包含marker文本 → 被当成标题 → 加粗变大。
-- 修了3个文件：
-  1. `docx_processor.py`：新增`_text_matches_title()`函数，匹配策略改为**标题文字优先**（用section的title字段精确匹配），start_marker降级为兜底。每个section只匹配一次防止重复传播。
-  2. `ai_analyzer.py`：修改SYSTEM_PROMPT，明确start_marker放标题文字本身。
-  3. `vite.config.ts`：修复代理端口8001→8000（阻止前端上传的附加Bug）。
-
-### 本次会话新发现的Bug
-
-**Bug: Vite代理端口配错**
-- 现象：拖动文件或点击上传无任何反应
-- 根因：`vite.config.ts`中proxy target写了`8001`，后端跑在`8000`
-- 修复：改回`8000`
+1. **模块化架构**：9 个独立板块（基础设施→格式标准→文件处理→任务管理→AI分析→排版引擎→预览→模板→前端），每个板块有独立目录
+2. **护理学论文格式标准**：四级标题体系（一、(一)、1.、(1)），特殊标题（摘要/Abstract/关键词/目录/参考文献/致谢/附录），黑体/宋体区分，Times New Roman for Latin
+3. **段落匹配三策略**：编号+标题精确匹配 → start_marker 兜底 → 特殊关键词匹配
+4. **前端重写**：React 19 + TypeScript + Vite + Tailwind + shadcn/ui，真实上传进度，章节导航，修改框
 
 ---
 
-## 四、为什么会出这么多Bug
+## 三、V2 最终状态
+
+**全部 9 板块代码完成**，18 个 API 端点注册，TypeScript 编译通过，前端全流程可走通。
+
+**端到端测试结果**（用测试论文 `test-paper-from-html.docx`）：
+- 上传 ✓
+- AI 分析（16 章节正确识别）✓
+- 排版（40085 bytes 输出）✓
+- 预览（16 章节，正文正确分配到各标题下）✓
+- 下载（curl 测试：200 OK，正确 Content-Type 和 Content-Length）✓
+
+**但在浏览器端用户下载失败**，暴露出以下问题。
+
+---
+
+## 四、BUG 编年史（按修复顺序）
+
+### Bug 1：`'center' is not a valid WD_ALIGN_PARAGRAPH`
+- **现象**：排版报错
+- **根因**：前端传字符串 `"center"`，python-docx 需要枚举 `WD_ALIGN_PARAGRAPH.CENTER`
+- **修复**：applier.py 加 `_normalize_alignment()` 字符串→枚举映射
+- **教训**：前后端数据格式不匹配
+
+### Bug 2：首行缩进被继承
+- **现象**：标题也带缩进
+- **根因**：原文档段落的首行缩进被 python-docx 保留
+- **修复**：在 `_apply_spec` 中显式设置 `pf.first_line_indent`
+- **教训**：python-docx 会保留原文档的段落属性，必须显式覆盖
+
+### Bug 3：参考文献模式泄漏
+- **现象**：参考文献后面的所有正文都变成参考文献格式
+- **根因**：进入 `in_reference` 模式后没有退出机制
+- **修复**：遇到新标题/特殊标题且不是"参考文献"时退出参考文献模式
+- **教训**：状态机必须有明确的退出条件
+
+### Bug 4：前端白屏
+- **现象**：排版完成后页面闪一下然后全白
+- **根因**：后端返回 `content: string[]`（数组），前端调 `s.content.split("\n")`（字符串方法）
+- **修复**：types/index.ts 改成 `content: string[]`，渲染改成 `s.content.map()`
+- **教训**：前后端类型必须一致，不能假设数据结构
+
+### Bug 5：正文全部流向"致谢"章节
+- **现象**：所有正文都出现在致谢里
+- **根因**：`match_paragraph` 的 Strategy 0c（特殊关键词匹配）用了 `kw in clean` 子串匹配。比如正文中出现"参考文献"三个字就创建了假章节
+- **修复**：改成 `clean.startswith(kw)` + 长度 ≤ 30 字符
+- **教训**：宽松的子串匹配会污染整个匹配链
+
+### Bug 6：目录条目被识别为章节
+- **现象**：预览里出现 "1前言 ............ [页码]" 这样的标题
+- **根因**：TOC 生成写死了 "............ [页码]" 文本，matcher 看到包含完整标题就匹配了
+- **修复**：加 `_is_toc_entry()` 检测连续点号
+- **教训**：生成的内容要考虑到它会被下游处理
+
+### Bug 7：下载按钮点不了
+- **现象**：fetch+Blob 方案让按钮无响应
+- **根因**：JS 运行时错误导致组件崩溃
+- **修复**：回退到 `<a>` 标签
+
+### Bug 8：`<a download>` 报 `ERR_FAILED`
+- **现象**：Chrome 拦截下载，显示"恢复/复制下载链接"
+- **根因**：Chrome 阻止 `<a download>` 属性（安全策略）
+- **修复**：去掉 `download` 属性，改用 `target="_blank"` + 服务端 `Content-Disposition: attachment`
+
+### Bug 9：Internal Server Error（自定义异常未注册）
+- **现象**：`NotFoundError` 返回 500 而不是 404
+- **根因**：`AppError` 继承 `Exception` 而不是 FastAPI 的 `HTTPException`，FastAPI 不认识
+- **修复**：`main.py` 加 `@app.exception_handler(AppError)`
+- **教训**：自定义异常必须注册到框架
+
+### Bug 10：`{"detail":"任务 undefined 不存在"}`
+- **现象**：下载链接变成 `/api/download/undefined`
+- **根因**：后端接口返回 `job_id` 字段，前端 `FormatJob` 类型用 `id` 字段。`setJob(analyzed)` 覆盖了之前的 job 对象，`job.id` 变成 `undefined`
+- **修复**：4 个后端路由统一改成 `"id"`，前端用合并更新而非覆盖
+- **教训**：字段命名不一致是沉默的杀手，前后端类型必须对齐
+
+---
+
+## 五、为什么 Bug 修不完
 
 ### 根本原因
 
-1. **需求表达不清晰**：用户是大二非CS学生，对论文格式深层规则不熟悉，发现Bug时只能说"这里不对"，无法描述预期行为。AI只按指令执行，缺乏主动验证。
+1. **一次性做了太多东西**：V2 做了 9 个板块、18 个 API 端点、完整前端，但核心的"格式化→下载"链路都没在浏览器里实际验证过
 
-2. **缺乏对照测试机制**：开发过程中没有用"标准格式文件"做对比验证，Bug积累到后期才发现。
+2. **测试只在命令行做**：curl 测试全部通过，但浏览器里的真实场景（跨域、下载属性、Chrome 安全策略）完全没测
 
-3. **AI分析的输出与排版引擎的输入不匹配**：AI返回的start_marker语义（"段落起始标记"）和代码实际使用方式（"标题定位标记"）存在理解偏差。
+3. **没有"快乐路径"端到端测试**：每次都从上传开始，每次都要等 AI 分析。没有准备一个"已分析好"的状态快速跳到各个节点测试
 
-4. **一次开发了太多功能**：6步流程、支付、模板、历史记录等全做了，但核心的格式匹配逻辑都没跑通。
+4. **前后端字段名不一致**：`job_id` vs `id`，`structure` 格式反复变，改了后端漏了前端
 
-### 经验教训
+5. **非核心功能抢了时间**：模板管理、格式设置面板、悬停浮窗花了很多时间，但核心下载都没跑通
 
-1. **先做最小可用版本**：只做"上传→排版→下载"三步，确认格式正确后再加高级功能。
-2. **必须有对照测试**：准备一篇格式正确的标准论文，每次改代码后跑一遍对比。
-3. **AI分析输出要精确验证**：检查AI返回的start_marker是不是真的指向标题段落。
-4. **配置检查清单**：端口、环境变量这些应该在启动时就检查好。
+6. **子智能体开发模式的代价**：9 个板块交给不同子智能体独立开发，每个都对自己的上下文负责，但没人对"拼起来能不能跑"负责
 
 ---
 
-## 五、下次重新开始时的建议流程
+## 六、下一次的正确做法
 
-### 第0步：打开Skills（开始前必做）
+### 用户的原话（一字不差）
 
-```
-1. 先开 brainstorming skill — 理清方向
-2. 然后开 update-config skill — 检查settings.json
-3. 按任务需要开其他 skills
-```
+> "下一次开始打开头脑风暴 skills 和 PUA skills，将我的要求一字不差的总结起来，这是以后的完成条件"
 
-### 第1步：环境确认
+### 铁律（必须遵守）
 
-```
-□ 后端端口 ./backend/.env 中的设置
-□ 前端 vite.config.ts 的 proxy target 端口一致
-□ DeepSeek API key 有效
-□ Python依赖完整
-□ npm依赖完整
-```
+1. **先跑通快乐路径再碰别的**：上传→分析→排版→下载，这 4 步必须在浏览器里 100% 正常，再写一行其他代码
 
-### 第2步：准备测试素材
+2. **每个改动都在浏览器验证**：改完后端重启，改完前端刷新，点一遍完整流程
 
-```
-□ 准备1篇格式完全正确的论文（标准文件）
-□ 基于标准文件制作1个格式打乱的版本（测试输入）
-□ 跑一遍标准文件→了解正确的格式规范
-```
+3. **前后端类型对齐**：所有接口返回的 JSON 必须和前端 `types/index.ts` 里的 interface 字段一一对应
 
-### 第3步：核心流程开发（只做三步）
+4. **功能最小化**：只做 4 步流程 + 一个干净的界面。不要模板、不要设置面板、不要导航、不要修改框、不要历史记录、不要定价
 
-```
-1. 上传docx → 2. AI分析结构 → 3. 排版输出
-```
-确认格式正确之前，不要加模式选择、模板、支付、历史记录等功能。
+5. **准备测试数据**：一个标准护理学论文 docx，放在固定路径，每次测试都用它
 
-### 第4步：对照测试
+6. **下载功能第一时间做对**：下载是整个流程的终点，不能留到最后
 
-```
-每次改代码后：
-1. 上传打乱文件
-2. 运行排版
-3. 下载结果
-4. 用compare脚本对比标准文件
-5. 逐个修差异
-```
+### 必做 vs 不做的边界
 
-### 第5步：交互功能
+**必做（核心流程）**：
+- 上传 docx 文件
+- AI 分析论文结构（标题层级、章节划分）
+- 按护理学论文格式排版
+- 浏览器下载排版后的文件
 
-核心排版100%正确后再加：
+**不做（等核心跑通后再说）**：
+- 模板管理/保存/切换
 - 格式设置面板
-- 模板管理
+- 手动标注模式
+- 章节修改/重新排版
+- 目录生成
+- 页眉页脚
 - 历史记录
-- 支付
+- 定价/支付
+- PDF 支持（只做 docx）
 
 ---
 
-## 六、关键代码位置速查
+## 七、技术栈 & 启动命令（保留）
 
 ```
-后端核心：
-  backend/app/services/docx_processor.py  ← 排版引擎，匹配逻辑在 _text_matches_title() 和 apply_formatting()
-  backend/app/services/ai_analyzer.py     ← AI提示词在 SYSTEM_PROMPT
-  backend/app/services/format_standards.py ← 格式标准（标题/正文/题注的字体字号对齐）
-  backend/app/routers/format.py           ← API路由
-  backend/app/main.py                     ← CORS配置
+后端：Python + FastAPI + SQLAlchemy + SQLite + python-docx + DeepSeek API
+前端：React 19 + TypeScript + Vite + Tailwind CSS 4 + shadcn/ui
 
-前端核心：
-  frontend/vite.config.ts                 ← 代理端口配置（必须和后端一致！）
-  frontend/src/components/upload/FileUploader.tsx ← 文件上传组件
-  frontend/src/services/api.ts            ← API调用
-  frontend/src/pages/HomePage.tsx         ← 首页
+启动：
+  后端: cd backend && /c/Users/博博/python.exe -m uvicorn app.main:app --port 8000
+  前端: cd frontend && npx vite --port 5173
 
-工具脚本：
-  paper-formatter/compare_format.py       ← 三向格式对比脚本
-  paper-formatter/debug_match.py          ← 段落匹配调试脚本
+访问：http://localhost:5173
+
+关键配置：
+  - 后端 .env 里 DeepSeek API key
+  - 前端 vite.config.ts proxy target 端口必须和后端一致
 ```
 
 ---
 
-## 七、提醒自己的话
+## 八、复盘保存位置
 
-1. **不要一口气做全部功能**。把核心排版做对，验证通过，再做别的。
-2. **每改一处代码就跑一遍测试**。用标准文件对比，确认没有倒退。
-3. **描述Bug时给三样东西**：复现步骤 + 预期效果 + 实际效果。不说"这里坏了"。
-4. **配置问题优先排查**：端口、环境变量、代理、CORS。这些跟业务逻辑无关但最容易炸。
-5. **AI不是万能的**。它给的start_marker可能是错的，要在代码里加兜底逻辑。
-6. **先把产品跑通，再谈赚钱**。支付、模板这些MVP之后再说。
+- 本文档：`docs/project-retrospective.md`
+- V2 设计文档：`docs/superpowers/specs/2026-05-19-paper-formatter-v2-design.md`
+- V2 进程日志：`docs/superpowers/plans/2026-05-19-paper-formatter-v2-progress.md`
 
 ---
 
-生成日期：2026-05-19
+生成日期：2026-05-19（终版）
 项目路径：C:\Users\博博\paper-formatter\
+结果：代码已删除，docs/ 保留

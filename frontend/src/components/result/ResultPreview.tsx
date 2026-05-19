@@ -57,7 +57,6 @@ export function ResultPreview({ job, preview, formatSettings, enabledSettings, o
   const [currentIdx, setCurrentIdx] = useState(0)
   const [tooltipInfo, setTooltipInfo] = useState<FormatInfo | null>(null)
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null)
-  const [downloading, setDownloading] = useState(false)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const sections = preview?.sections ?? []
@@ -87,25 +86,6 @@ export function ResultPreview({ job, preview, formatSettings, enabledSettings, o
     setTooltipRect(null)
   }
 
-  const handleDownload = async () => {
-    setDownloading(true)
-    try {
-      const res = await fetch(getDownloadUrl(job.id))
-      if (!res.ok) throw new Error(await res.text())
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `formatted_${job.original_filename}`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } finally {
-      setDownloading(false)
-    }
-  }
-
   return (
     <div className="max-w-3xl mx-auto space-y-4">
       {/* Navigation */}
@@ -118,14 +98,9 @@ export function ResultPreview({ job, preview, formatSettings, enabledSettings, o
           <h2 className="text-lg font-semibold">排版结果预览</h2>
           <Badge variant="secondary" className="ml-1">共 {total} 节</Badge>
         </div>
-        <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading}>
-          {downloading ? (
-            <span className="inline-block w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin mr-1" />
-          ) : (
-            <Download className="w-4 h-4 mr-1" />
-          )}
-          下载
-        </Button>
+        <a href={getDownloadUrl(job.id)} download={`formatted_${job.original_filename}`} className="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
+          <Download className="w-4 h-4" />下载
+        </a>
       </div>
 
       {/* Section navigation — top (always visible) */}

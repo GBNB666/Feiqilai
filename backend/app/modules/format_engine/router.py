@@ -75,9 +75,9 @@ async def execute_formatting(
             except (json.JSONDecodeError, AttributeError):
                 pass
 
-        # 确定输出路径
+        # 确定输出路径（绝对路径，防止 CWD 变化导致文件找不到）
         output_path = str(
-            Path(settings.output_dir) / f"{job_id}.docx"
+            Path(settings.output_dir).resolve() / f"{job_id}.docx"
         )
 
         # 执行排版

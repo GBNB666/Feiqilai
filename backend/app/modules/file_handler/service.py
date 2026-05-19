@@ -56,8 +56,8 @@ class FileService:
 
     @staticmethod
     def get_output_path(job_id: str) -> Path | None:
-        """获取下载文件路径"""
-        candidate = Path(settings.output_dir) / f"{job_id}.docx"
+        """获取下载文件路径（绝对路径）"""
+        candidate = Path(settings.output_dir).resolve() / f"{job_id}.docx"
         if candidate.exists():
             return candidate
         return None

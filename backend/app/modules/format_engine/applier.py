@@ -1,6 +1,7 @@
 """格式应用器 — 将格式规范应用到 python-docx 段落"""
 import re
 from docx.oxml.ns import qn
+from docx.shared import Pt
 from app.modules.format_standards.defaults import (
     get_page_spec,
     get_title_spec,
@@ -81,8 +82,7 @@ def _apply_spec(para, spec: dict, is_heading: bool) -> None:
 
     if "line_spacing" in spec:
         pf.line_spacing = spec["line_spacing"]
-    if "first_line_indent" in spec:
-        pf.first_line_indent = spec["first_line_indent"]
+    pf.first_line_indent = spec.get("first_line_indent", Pt(0))
     if "space_before" in spec:
         pf.space_before = spec["space_before"]
     if "space_after" in spec:

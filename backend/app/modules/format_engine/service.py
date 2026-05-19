@@ -61,6 +61,11 @@ class FormatEngine:
             # 匹配
             match_type, level = match_paragraph(text, structure, matched_sections)
 
+            # 遇到非参考文献区的标题/特殊标题时，退出参考文献模式
+            if match_type in ("paper_title", "subtitle", "special_heading", "heading"):
+                if in_reference and "参考文献" not in text:
+                    in_reference = False
+
             # 应用格式
             apply_format(
                 para,

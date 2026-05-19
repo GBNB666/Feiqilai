@@ -75,10 +75,23 @@ def apply_format(
             _apply_latin_font_to_runs(para)
 
 
+def _normalize_alignment(value):
+    """将字符串对齐值转为 WD_ALIGN_PARAGRAPH 枚举"""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        mapping = {v.name.lower(): v for v in WD_ALIGN_PARAGRAPH}
+        return mapping.get(value.lower(), None)
+    return value
+
+
 def _apply_spec(para, spec: dict, is_heading: bool) -> None:
     """将格式规格应用到段落及其所有 run"""
     pf = para.paragraph_format
-    pf.alignment = spec.get("alignment", pf.alignment)
+    alignment = spec.get("alignment")
+    if alignment is not None:
+        pf.alignment = _normalize_alignment(alignment)
 
     if "line_spacing" in spec:
         pf.line_spacing = spec["line_spacing"]

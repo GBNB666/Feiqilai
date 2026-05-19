@@ -204,21 +204,13 @@ export function ResultPreview({ job, preview, formatSettings, enabledSettings, o
         </div>
       )}
 
-      {/* Navigation bar */}
-      {total > 0 && (
-        <div className="flex items-center justify-between bg-muted/40 rounded-lg px-4 py-3">
-          <Button onClick={goPrev} disabled={currentIdx === 0} variant="ghost" size="sm">
-            <ChevronLeft className="w-5 h-5 mr-1" />上一节
-          </Button>
-          <span className="text-sm font-medium tabular-nums">第 {currentIdx + 1} / {total} 节</span>
-          <Button onClick={goNext} disabled={currentIdx >= total - 1} variant="ghost" size="sm">
-            下一节<ChevronRight className="w-5 h-5 ml-1" />
-          </Button>
-        </div>
-      )}
-
       {/* Command modification */}
-      <CommandInput sectionCount={total} onSubmit={onModifySection} />
+      <CommandInput
+        sectionCount={total}
+        currentIndex={currentIdx}
+        onNavigate={setCurrentIdx}
+        onSubmit={onModifySection}
+      />
 
       {/* Format tooltip */}
       <FormatTooltip info={tooltipInfo} anchorRect={tooltipRect} />

@@ -18,6 +18,10 @@ def match_paragraph(
     """
     clean = text.strip()
 
+    # 跳过目录条目（含连续点号或制表符前导符的页码行）
+    if _is_toc_entry(clean):
+        return ("body", None)
+
     # Strategy 0: 论文标题
     paper_title = structure.get("title", "")
     if paper_title and "__title__" not in matched_sections:
@@ -32,9 +36,9 @@ def match_paragraph(
             matched_sections.add("__subtitle__")
             return ("subtitle", 0)
 
-    # Strategy 0c: 特殊标题（摘要/目录/致谢/参考文献/Abstract）
+    # Strategy 0c: 特殊标题 — 仅当段落以关键词开头且为短标题时匹配
     for kw in SPECIAL_KEYWORDS:
-        if kw in clean and kw not in matched_sections:
+        if kw not in matched_sections and len(clean) <= 30 and clean.startswith(kw):
             matched_sections.add(kw)
             return ("special_heading", 0)
 
@@ -79,7 +83,7 @@ def is_title_match(para_text: str, title: str) -> bool:
         return True
     if clean_para.startswith(clean_title) and len(clean_para) - len(clean_title) <= 20:
         return True
-    if len(clean_para) <= 30 and clean_title in clean_para:
+    if len(clean_para) <= 30 and clean_para.startswith(clean_title):
         return True
     return False
 
@@ -111,6 +115,17 @@ def is_caption_text(text: str) -> bool:
     """检查文本是否是图/表题注"""
     clean = text.strip()
     return bool(re.match(r"^(图|表|Figure|Table)\s*\d+", clean))
+
+
+def _is_toc_entry(text: str) -> bool:
+    """检查是否是目录条目（含连续点号或页码）"""
+    if re.search(r"\.{3,}", text):
+        return True
+    if re.search(r"…{2,}", text):
+        return True
+    if re.search(r"\[页码\]|\d+\s*$", text) and len(text) > 40:
+        return True
+    return False
 
 
 def is_toc_paragraph(text: str) -> bool:

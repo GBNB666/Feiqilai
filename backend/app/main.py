@@ -31,33 +31,33 @@ def init_app(app: FastAPI) -> None:
     Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
     Path(settings.output_dir).mkdir(parents=True, exist_ok=True)
 
-    # 创建数据库表（逐步构建：后续任务完成后逐步取消注释模型导入）
-    # from app.modules.job_manager.models import FormatJob  # noqa: F401
-    # from app.modules.template_manager.models import FormatTemplate  # noqa: F401
-    # Base.metadata.create_all(bind=engine)
+    # 创建数据库表
+    from app.modules.job_manager.models import FormatJob  # noqa: F401
+    from app.modules.template_manager.models import FormatTemplate  # noqa: F401
+    Base.metadata.create_all(bind=engine)
 
-    # 注册路由（逐步构建：后续任务完成后逐步取消注释）
-    # from app.modules.file_handler.router import router as file_router
-    # app.include_router(file_router)
-    # from app.modules.ai_analyzer.router import router as ai_router
-    # app.include_router(ai_router)
-    # from app.modules.format_engine.router import router as format_router
-    # app.include_router(format_router)
-    # from app.modules.preview.router import router as preview_router
-    # app.include_router(preview_router)
-    # from app.modules.job_manager.router import router as job_router
-    # app.include_router(job_router)
-    # from app.modules.template_manager.router import router as template_router
-    # app.include_router(template_router)
+    # 注册路由
+    from app.modules.file_handler.router import router as file_router
+    app.include_router(file_router)
+    from app.modules.ai_analyzer.router import router as ai_router
+    app.include_router(ai_router)
+    from app.modules.format_engine.router import router as format_router
+    app.include_router(format_router)
+    from app.modules.preview.router import router as preview_router
+    app.include_router(preview_router)
+    from app.modules.job_manager.router import router as job_router
+    app.include_router(job_router)
+    from app.modules.template_manager.router import router as template_router
+    app.include_router(template_router)
 
-    # 种子数据（模板模块完成后启用）
-    # from app.modules.template_manager.service import TemplateService
-    # from app.database import SessionLocal
-    # db = SessionLocal()
-    # try:
-    #     TemplateService.seed_default(db)
-    # finally:
-    #     db.close()
+    # 种子数据
+    from app.modules.template_manager.service import TemplateService
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        TemplateService.seed_default(db)
+    finally:
+        db.close()
 
 
 app = create_app()

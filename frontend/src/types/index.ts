@@ -51,7 +51,7 @@ export interface ContentMarker {
 export interface PreviewSection {
   level: number
   title: string
-  content: string
+  content: string[]
   markers: ContentMarker[]
 }
 

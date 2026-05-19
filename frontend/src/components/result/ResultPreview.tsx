@@ -165,9 +165,9 @@ export function ResultPreview({ job, preview, formatSettings, enabledSettings, o
                     )}
 
                     {/* Section content */}
-                    {s.content && (
+                    {s.content && s.content.length > 0 && (
                       <div className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground font-[serif]">
-                        {s.content.split("\n").map((line, pi) => (
+                        {s.content.map((line, pi) => (
                           <p
                             key={pi}
                             className="mb-1"

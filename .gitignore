@@ -38,3 +38,6 @@ Thumbs.db
 # ── 文档生成的临时文件 ──
 docs/*.docx
 docs/*.pdf
+frontend/test_*.docx
+~.docx
+frontend/src/assets/hero.png

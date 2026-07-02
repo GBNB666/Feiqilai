@@ -1,0 +1,53 @@
+name: Build EXE
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements.txt pyinstaller
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Copy static files
+        run: |
+          if (Test-Path backend/static) { Remove-Item -Recurse -Force backend/static }
+          Copy-Item -Recurse frontend/dist backend/static
+
+      - name: Build EXE
+        run: pyinstaller --clean --noconfirm paper-formatter.spec
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhipai-ai-exe
+          path: dist/智排AI.exe
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/智排AI.exe

@@ -41,3 +41,8 @@ docs/*.pdf
 frontend/test_*.docx
 ~.docx
 frontend/src/assets/hero.png
+
+# ── 大文件 ──
+*.pptx
+.env.backup
+backend/.env

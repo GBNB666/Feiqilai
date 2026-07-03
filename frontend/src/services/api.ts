@@ -1,9 +1,11 @@
 const BASE = "/api";
 
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
+async function request<T>(url: string, options?: RequestInit & { signal?: AbortSignal }): Promise<T> {
+  const { signal, ...rest } = options || {};
   const res = await fetch(`${BASE}${url}`, {
     headers: { "Content-Type": "application/json" },
-    ...options,
+    signal,
+    ...rest,
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -62,8 +64,8 @@ export const api = {
       body: JSON.stringify({ job_id: jobId, settings }),
     }),
 
-  getJob: (jobId: string) =>
-    request<JobResponse>(`/format/job/${jobId}`),
+  getJob: (jobId: string, signal?: AbortSignal) =>
+    request<JobResponse>(`/format/job/${jobId}`, { signal }),
 
   getPreview: (jobId: string) =>
     request<PreviewResponse>(`/preview/${jobId}`),

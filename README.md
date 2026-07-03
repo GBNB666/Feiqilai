@@ -1,25 +1,22 @@
-# 智排AI — 智能论文排版助手
+# AI智排 — 论文排版助手
 
-一键排版你的学术论文。上传 `.docx` 文件 → AI 分析结构 → 自动排版 → 下载 Word/PDF。
+一键上传，AI 自动排版，三线表 / 参考文献重排 / 目录生成全搞定。
 
-## 功能特性
+## 功能
 
-- **AI 结构分析** — DeepSeek 自动识别论文的标题、章节、图表、参考文献
-- **自动排版** — 字体、字号、行距、缩进一键标准化
-- **学校模板** — 内置多个高校论文格式模板，一键套用
-- **三线表** — 自动转换表格为标准三线表
-- **目录生成** — 自动生成带页码的目录，Word 打开自动更新
-- **公式编号** — 按章节自动编号 (1-1), (1-2)...
-- **图表题注重排** — 图1.1 / 表1.1 按章内独立编号
-- **参考文献重排** — [1], [2], [3]... 连续编号 + 悬挂缩进
-- **图片调整** — 可视化调整图片尺寸和对齐
-- **预览系统** — 排版后按章节预览效果
+- **AI 智能分析** — DeepSeek 自动识别论文标题、章节、参考文献结构
+- **全自动排版** — 标题/正文/引用一键格式化
+- **三线表转换** — 普通表格自动转为学术三线表
+- **图表题注编号** — 图1.1 / 表1.1 按章独立编号
+- **参考文献重排** — 连续编号 + 悬挂缩进
+- **目录自动生成** — 勾选开关即可插入
+- **学校模板** — 内置多校论文格式，一键应用
+- **图片调整** — 批量设置宽度比例、对齐方式
+- **格式设置面板** — 字体/字号/间距逐项微调
+- **实时预览** — 排版后 HTML 预览，满意再下载
+- **Word + PDF 双格式下载**
 
 ## 快速开始
-
-### 下载运行（无需 Python）
-
-从 [Releases](https://github.com/your-username/paper-formatter/releases) 下载 `智排AI.exe`，双击运行。
 
 ### 开发模式
 
@@ -27,60 +24,60 @@
 # 后端
 cd backend
 pip install -r requirements.txt
-uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+python -m uvicorn app.main:app --reload
 
-# 前端
+# 前端（另一个终端）
 cd frontend
 npm install
 npm run dev
 ```
 
-访问 `http://localhost:5173`。
+打开 http://localhost:5173
 
-### 构建 exe
+### 打包为 exe
 
 ```bash
 pip install pyinstaller
 python build_exe.py
 ```
 
-产出 `dist/智排AI.exe`。
+输出: `dist/AI智排.exe` — 双击运行，浏览器自动打开。
 
 ## 技术栈
 
-| 层 | 技术 |
-|----|------|
-| 前端 | React 19 + TypeScript + Tailwind CSS 4 + Vite |
-| 后端 | FastAPI + SQLAlchemy + python-docx |
-| AI | DeepSeek Chat API |
-| 打包 | PyInstaller |
+- **后端**: FastAPI + SQLAlchemy + python-docx
+- **前端**: React + TypeScript + Tailwind CSS
+- **AI**: DeepSeek API
+- **打包**: PyInstaller
 
 ## 项目结构
 
 ```
 paper-formatter/
-  backend/          # FastAPI 后端
-    app/
-      modules/      # 功能模块 (file_handler, ai_analyzer, format_engine, ...)
-      shared/       # 共享 schemas + 错误处理
-      data/         # 学校模板 JSON
-  frontend/         # React 前端
-    src/
-      pages/        # 页面组件
-      modules/      # 功能面板
-      components/   # 通用组件
-  run.py            # exe 启动入口
-  build_exe.py      # 构建脚本
-  paper-formatter.spec  # PyInstaller 配置
-```
-
-## 环境变量
-
-在 `backend/.env` 中配置（开发模式）：
-
-```
-DEEPSEEK_API_KEY=sk-your-key-here
-DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+├── backend/
+│   ├── app/
+│   │   ├── modules/
+│   │   │   ├── ai_analyzer/      # AI 分析
+│   │   │   ├── file_handler/     # 文件上传/下载/转换
+│   │   │   ├── format_engine/    # 排版引擎
+│   │   │   ├── image_formatter/  # 图片格式化
+│   │   │   ├── job_manager/      # 任务管理
+│   │   │   ├── preview/          # HTML 预览
+│   │   │   ├── school_template/  # 学校模板
+│   │   │   └── template_manager/ # 用户模板
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   └── main.py
+│   └── data/school_templates/    # 学校模板 JSON
+├── frontend/
+│   └── src/
+│       ├── pages/                # 页面
+│       ├── modules/              # 功能模块
+│       ├── components/           # 通用组件
+│       └── services/             # API 调用
+├── run.py                        # exe 启动入口
+├── build_exe.py                  # 一键构建脚本
+└── paper-formatter.spec          # PyInstaller 配置
 ```
 
 ## License

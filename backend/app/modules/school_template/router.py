@@ -19,7 +19,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "scho
 
 
 def _user_templates_dir() -> Path:
-    """用户自定义模板保存到数据目录（开发: backend/data/my_templates/，exe: %APPDATA%/智排AI/my_templates/）。"""
+    """用户自定义模板保存到数据目录（开发: backend/data/my_templates/，exe: %APPDATA%/AI智排/my_templates/）。"""
     from app.config import get_settings
     settings = get_settings()
     p = Path(settings.data_dir) / "my_templates"

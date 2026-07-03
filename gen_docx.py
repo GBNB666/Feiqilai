@@ -55,7 +55,7 @@ print("Make sure KaiTi and HeiTi fonts are installed on this system")
 
 # ── COVER ──
 for _ in range(6): doc.add_paragraph()
-ap("《智排AI》创业计划书", "KaiTi", "Times New Roman", 26, True, "center")
+ap("《AI智排》创业计划书", "KaiTi", "Times New Roman", 26, True, "center")
 doc.add_paragraph()
 ap("——基于AI的论文格式智能排版平台", "KaiTi", "Times New Roman", 16, False, "center")
 for _ in range(4): doc.add_paragraph()

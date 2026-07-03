@@ -23,6 +23,9 @@ def execute_format(job_id: str, db: Session = Depends(get_db)):
         raise NotFoundError(f"Job not found: {job_id}")
     if not job.ai_analysis:
         raise NotFoundError("请先完成AI分析")
+    # 并发防护：仅 ANALYZED/COMPLETED/FAILED 状态可进入排版
+    if job.status in ("FORMATTING", "ANALYZING", "UPLOADED"):
+        raise ConflictError(f"当前状态 {job.status} 不允许执行排版，请等待当前操作完成")
 
     import json
     structure = json.loads(job.ai_analysis)

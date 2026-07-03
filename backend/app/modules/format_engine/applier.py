@@ -457,7 +457,11 @@ def renumber_references(doc):
         new_prefix = f"[{ref_index}]"
 
         # 替换或添加编号
-        _replace_reference_prefix(para, new_prefix)
+        try:
+            _replace_reference_prefix(para, new_prefix)
+        except Exception:
+            # 极端不规范格式时跳过该条，不阻塞整个排版
+            continue
 
 
 def _is_reference_heading(text: str) -> bool:
@@ -491,9 +495,9 @@ def _replace_reference_prefix(paragraph, new_prefix: str):
     if not paragraph.runs:
         return
 
-    # 拼接全文并去掉旧编号
+    # 拼接全文并去掉旧编号（兼容 [1]、[1,2]、[1-3] 等格式）
     full_text = "".join(r.text for r in paragraph.runs)
-    body = re.sub(r"^\[[\d,\s]*\]\s*", "", full_text.strip())
+    body = re.sub(r"^\[[\d,\-\s]+\]\s*", "", full_text.strip())
 
     # 直接重写所有 run: run[0] 放完整新文本，其余清空
     paragraph.runs[0].text = f"{new_prefix} {body}"

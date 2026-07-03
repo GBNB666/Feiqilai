@@ -5,9 +5,9 @@ from functools import lru_cache
 
 
 def _default_data_dir() -> str:
-    """exe 模式: %APPDATA%/智排AI/; 开发模式: 项目根目录"""
+    """exe 模式: %APPDATA%/AI智排/; 开发模式: 项目根目录"""
     if getattr(sys, "frozen", False):
-        return os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "智排AI")
+        return os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "AI智排")
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com/v1"
 
-    # ── 数据目录（exe 模式下自动使用 %APPDATA%/智排AI）──
+    # ── 数据目录（exe 模式下自动使用 %APPDATA%/AI智排）──
     data_dir: str = ""
 
     # ── 路径（基于 data_dir）──

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../services/api";
 import type { JobResponse, FlowState } from "../types";
@@ -25,13 +25,24 @@ export default function ProcessPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
   const [lastAppliedSettings, setLastAppliedSettings] = useState<Record<string, any> | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
     if (!jobId) return;
-    api.getJob(jobId).then((j) => {
+    const controller = new AbortController();
+    api.getJob(jobId, controller.signal).then((j) => {
+      if (!mountedRef.current) return;
       setJob(j);
       setState(mapStatus(j.status));
-    }).catch((e) => setError(e.message));
+    }).catch((e) => {
+      if (e.name === "AbortError") return;
+      if (!mountedRef.current) return;
+      setError(e.message);
+    });
+    return () => {
+      mountedRef.current = false;
+      controller.abort();
+    };
   }, [jobId]);
 
   const mapStatus = (status: string): FlowState => {
@@ -50,20 +61,24 @@ export default function ProcessPage() {
     if (!jobId) return;
     try {
       const updated = await api.selectMode(jobId, mode);
+      if (!mountedRef.current) return;
       setJob(updated);
       setState("analyzing");
 
       const result = await api.analyze(jobId);
+      if (!mountedRef.current) return;
       setJob(result);
       setState("analyzed");
 
       if (mode === "auto") {
         setState("formatting");
         const formatted = await api.execute(jobId);
+        if (!mountedRef.current) return;
         setJob(formatted);
         setState("done");
       }
     } catch (e: any) {
+      if (!mountedRef.current) return;
       setError(e.message);
       setState("error");
     }
@@ -73,17 +88,18 @@ export default function ProcessPage() {
     if (!jobId) return;
     try {
       await api.customize(jobId, settings as any);
-      // 保存设置后立即重新排版，让格式改动生效
+      if (!mountedRef.current) return;
       setState("formatting");
       setLastAppliedSettings(settings);
       const result = await api.execute(jobId);
+      if (!mountedRef.current) return;
       setJob(result);
       setState("done");
       setPreviewKey(k => k + 1);
-      // 显示应用完成反馈
       setToast("应用完成");
       setTimeout(() => setToast(null), 2500);
     } catch (e: any) {
+      if (!mountedRef.current) return;
       setError(e.message);
       setState("error");
     }
@@ -94,9 +110,11 @@ export default function ProcessPage() {
     try {
       setState("formatting");
       const result = await api.execute(jobId);
+      if (!mountedRef.current) return;
       setJob(result);
       setState("done");
     } catch (e: any) {
+      if (!mountedRef.current) return;
       setError(e.message);
       setState("error");
     }

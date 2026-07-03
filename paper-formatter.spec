@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for 智排AI"""
+"""PyInstaller spec for AI智排"""
 
 import os
 import sys
@@ -61,7 +61,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="智排AI",
+    name="AI智排",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

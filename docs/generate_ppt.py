@@ -116,7 +116,7 @@ def add_footer(slide):
     line.line.fill.background()
 
     add_textbox(slide, Inches(0.8), Inches(7.08), Inches(11.733), Inches(0.35),
-                text="智排AI", font_size=Pt(10), color=DIM_GRAY,
+                text="AI智排", font_size=Pt(10), color=DIM_GRAY,
                 alignment=PP_ALIGN.RIGHT)
 
 
@@ -273,7 +273,7 @@ def build_slide2(prs):
 
     # Title
     add_textbox(slide, Inches(0.8), Inches(0.4), Inches(11.5), Inches(0.7),
-                text="智排AI —— 上传 / 分级 / 排版 / 下载",
+                text="AI智排 —— 上传 / 分级 / 排版 / 下载",
                 font_size=Pt(34), bold=True, color=WHITE, line_spacing=1.3)
 
     add_textbox(slide, Inches(0.8), Inches(1.05), Inches(11.5), Inches(0.4),
@@ -361,7 +361,7 @@ def build_slide2(prs):
 
     notes = slide.notes_slide
     notes.notes_text_frame.text = (
-        "这个人做的东西叫智排AI，一个微信小程序，点开就能用。"
+        "这个人做的东西叫AI智排，一个微信小程序，点开就能用。"
         "用起来很简单：你把论文上传上去，先自己标一下哪个是大标题、哪个是小标题、"
         "哪个是正文——为什么要自己标？因为你的论文写了什么只有你最清楚，让软件去猜一定会出错。"
         "标完之后点一个按钮，几秒钟，全文的格式就给你排得规规整整，直接就能下载。"
@@ -722,7 +722,7 @@ def build_slide6(prs):
 
     # Bottom tagline
     add_textbox(slide, Inches(3.0), Inches(5.6), Inches(7.333), Inches(0.4),
-                text="智排AI - 微信小程序 - 让每个人都能轻松搞定论文格式",
+                text="AI智排 - 微信小程序 - 让每个人都能轻松搞定论文格式",
                 font_size=Pt(12), color=DIM_GRAY,
                 alignment=PP_ALIGN.CENTER, line_spacing=1.2)
 
@@ -751,7 +751,7 @@ def main():
     build_slide5(prs)
     build_slide6(prs)
 
-    output_path = r"C:\Users\博博\paper-formatter\docs\智排AI_比赛PPT.pptx"
+    output_path = r"C:\Users\博博\paper-formatter\docs\AI智排_比赛PPT.pptx"
     prs.save(output_path)
     print("PPT saved to: " + output_path)
     print("Done! 6 slides generated.")

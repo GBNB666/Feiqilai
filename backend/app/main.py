@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="智排AI", version="3.0.0", lifespan=lifespan)
+    app = FastAPI(title="AI智排", version="3.0.0", lifespan=lifespan)
     settings = get_settings()
 
     # ── CORS ──

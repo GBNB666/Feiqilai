@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""智排AI 启动入口 — 双击运行或 PyInstaller 打包后自动启动。
+"""AI智排 启动入口 — 双击运行或 PyInstaller 打包后自动启动。
 
 - 启动 uvicorn 服务器
 - 自动打开默认浏览器
@@ -16,11 +16,11 @@ def get_app_dir() -> str:
     """获取应用数据目录（exe 旁或 %APPDATA%）。
 
     PyInstaller 打包后 sys.frozen=True，exe 所在目录用于静态文件；
-    用户数据（数据库、上传、输出）放在 %APPDATA%/智排AI/。
+    用户数据（数据库、上传、输出）放在 %APPDATA%/AI智排/。
     """
     if getattr(sys, "frozen", False):
         appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
-        return os.path.join(appdata, "智排AI")
+        return os.path.join(appdata, "AI智排")
     return os.path.dirname(os.path.abspath(__file__))
 
 
@@ -34,7 +34,7 @@ def main():
     os.environ.setdefault("SERVE_STATIC", "true")
 
     print(f"数据目录: {app_dir}")
-    print("正在启动智排AI服务器...")
+    print("正在启动AI智排服务器...")
 
     host = "127.0.0.1"
     port = 8000

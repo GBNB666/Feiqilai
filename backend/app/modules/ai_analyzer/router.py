@@ -34,6 +34,10 @@ async def analyze(job_id: str, db: Session = Depends(get_db), request: Request =
     job = JobService.get(job_id, db)
     if job is None:
         raise NotFoundError(f"Job not found: {job_id}")
+    # 并发防护：仅 UPLOADED 或 FAILED 状态可进入分析
+    from app.shared.errors import ConflictError
+    if job.status not in ("UPLOADED", "FAILED"):
+        raise ConflictError(f"当前状态 {job.status} 不允许重复分析")
 
     try:
         JobService.set_status(job.id, "ANALYZING", db)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""智排AI 一键构建脚本
+"""AI智排 一键构建脚本
 
 1. 构建前端 (npm run build)
 2. 复制静态文件到 backend/static/
@@ -55,7 +55,7 @@ def main():
         desc="PyInstaller 打包")
 
     print(f"\n{'='*60}")
-    print(f"  构建完成! 输出: {os.path.join(ROOT, DIST_DIR, '智排AI.exe')}")
+    print(f"  构建完成! 输出: {os.path.join(ROOT, DIST_DIR, 'AI智排.exe')}")
     print(f"{'='*60}")
 
 

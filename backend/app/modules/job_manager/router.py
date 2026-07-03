@@ -17,10 +17,9 @@ def select_mode(body: SelectModeRequest, db: Session = Depends(get_db)):
     job = JobService.get(body.job_id, db)
     if job is None:
         raise NotFoundError(f"Job not found: {body.job_id}")
-    # 状态机守卫：仅 UPLOADED 状态可进入分析
-    if job.status != "UPLOADED":
+    # 状态机守卫：仅 UPLOADED 或 FAILED 状态可进入分析
+    if job.status not in ("UPLOADED", "FAILED"):
         raise ConflictError(f"当前状态 {job.status} 不允许选择模式，请重新上传文件")
-    job = JobService.set_status(body.job_id, "ANALYZING", db)
     job.format_mode = body.format_mode.value
     db.commit()
     db.refresh(job)
